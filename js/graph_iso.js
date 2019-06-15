@@ -17,7 +17,7 @@ function createNode(node_data) {
               .data(node_data)
               .enter()
               .append("circle")
-              .attr("r", 10)
+              .attr("r", 5)
               .attr("fill", 'black');
 }
 
@@ -40,21 +40,11 @@ function tickActions(node, link) {
         .attr("x2", function(d) {return d.target.x})
         .attr("y2", function(d) {return d.target.y});
 }
-
-var sim = createSimulation(ndata, ldata, 100, 500);
-var node = createNode(ndata);
-var link = createLink(ldata);
-sim.on("tick", function() {tickActions(node, link)});
-
-var sim2 = createSimulation(ndata, ldata2, 200, 500);
-var node2 = createNode(ndata);
-var link2 = createLink(ldata2);
-sim2.on("tick", function() {tickActions(node2, link2)});
-
+/*
 svg.append("line")
    .attr("x1", 135)
    .attr("y1", 500)
    .attr("x2", 170)
    .attr("y2", 500)
    .attr("stroke-width", 2)
-   .attr("stroke", "red")
+   .attr("stroke", "red")*/
