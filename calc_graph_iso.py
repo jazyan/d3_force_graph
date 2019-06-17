@@ -1,6 +1,9 @@
 from itertools import permutations
 from collections import defaultdict
 
+# generate edges given a list of nodes
+# assume that the edges are undirected, so [0, 1] = [1, 0]
+# the convention is to list the smaller node first
 def generate_edges(nodes):
     N = len(nodes)
     edges = []
@@ -19,6 +22,9 @@ def powerset(li):
         A.append(subset)
     return A
 
+# given the number of nodes, return a list of all the graphs
+# represented as edge lists where no two graphs are isomorphisms
+# of each other
 def get_no_isomorphisms_list(num_nodes):
     nodes = [i for i in range(num_nodes)]
     edges = generate_edges(nodes)
@@ -34,6 +40,10 @@ def get_no_isomorphisms_list(num_nodes):
         no_iso_list.append(candidate)
         for p in perm:
             new_candidate = []
+            # we sort everything because the edges are undirected
+            # so we don't want to distinguish between [0, 1] and [1, 0]
+            # also, use tuples because we want to put them in a set,
+            # and tuples, not lists, are hashable types
             for elt in candidate:
                 new_elt = tuple(sorted([p[e] for e in elt]))
                 new_candidate.append(new_elt)
@@ -48,6 +58,7 @@ d_edges_list = defaultdict(list)
 for graph in no_iso_list:
     d_edges_list[len(graph)].append(graph)
 
+# below generates the graph data for d3 visualization
 with open('js/generated_graph_data.js', 'w') as f:
     f.write('var ndata = [\n')
     for i in range(num_nodes):
@@ -60,6 +71,7 @@ with open('js/generated_graph_data.js', 'w') as f:
             f.write('    ' + str(g) + ',\n')
         f.write(']\n')
 
+# below generates the d3 simulation variables for each graph
 with open('js/generated_graph_viz.js', 'w') as f:
     # var sim0 = createSimulation(ndata, ldata[0], 100, 500);
     # var node0 = createNode(ndata);
@@ -67,8 +79,10 @@ with open('js/generated_graph_viz.js', 'w') as f:
     # sim0.on("tick", function() {tickActions(node0, link0)});
     for num, graphs in d_edges_list.items():
         for i in range(len(graphs)):
-            f.write('var sim' + str(num * 100 + i) + ' = createSimulation(ndata, ldata' + str(num) + '[' + str(i) + '], ' + str((num + 1) * 100) + ', ' + str(100 + i * 100) + ');\n')
-            f.write('var node' + str(num * 100 + i) + ' = createNode(ndata);\n')
-            f.write('var link' + str(num * 100 + i) + ' = createLink(ldata' + str(num) + '[' + str(i) + ']);\n')
-            f.write('sim' + str(num * 100 + i) + '.on("tick", function() {tickActions(node' + str(num * 100 + i) + ', link' + str(num * 100 + i) + ')});\n')
+            var_num = str(num * 100 + i)
+            f.write('var sim' + var_num + ' = createSimulation(ndata, ldata' + str(num) + '[' + str(i) + '], ' 
+                    + str((num + 1) * 100) + ', ' + str(100 + i * 100) + ');\n')
+            f.write('var node' + var_num + ' = createNode(ndata);\n')
+            f.write('var link' + var_num + ' = createLink(ldata' + str(num) + '[' + str(i) + ']);\n')
+            f.write('sim' + var_num + '.on("tick", function() {tickActions(node' + var_num + ', link' + var_num + ')});\n')
             f.write('\n')
