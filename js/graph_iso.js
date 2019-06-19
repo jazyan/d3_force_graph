@@ -40,11 +40,14 @@ function tickActions(node, link) {
         .attr("x2", function(d) {return d.target.x})
         .attr("y2", function(d) {return d.target.y});
 }
-/*
-svg.append("line")
-   .attr("x1", 135)
-   .attr("y1", 500)
-   .attr("x2", 170)
-   .attr("y2", 500)
-   .attr("stroke-width", 2)
-   .attr("stroke", "red")*/
+
+var gap = 20
+for (var i = 0; i < lines.length; i++) {
+    svg.append("line")
+       .attr("x1", lines[i][0] + gap)
+       .attr("y1", lines[i][1])
+       .attr("x2", lines[i][2] - gap)
+       .attr("y2", lines[i][3])
+       .attr("stroke-width", 1)
+       .attr("stroke", "red")
+}

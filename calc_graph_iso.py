@@ -25,11 +25,7 @@ def powerset(li):
 # given the number of nodes, return a list of all the graphs
 # represented as edge lists where no two graphs are isomorphisms
 # of each other
-def get_no_isomorphisms_list(num_nodes):
-    nodes = [i for i in range(num_nodes)]
-    edges = generate_edges(nodes)
-    graph_candidates = powerset(edges)
-    perm = list(permutations(nodes))
+def get_no_isomorphisms_list():
     no_iso_list = []
     seen = set()
     for candidate in graph_candidates:
@@ -51,12 +47,50 @@ def get_no_isomorphisms_list(num_nodes):
             seen.add(new_candidate)
     return sorted(no_iso_list, key=len)
 
-num_nodes = 6
-no_iso_list = get_no_isomorphisms_list(num_nodes)
+def check_subgraphs(graph, subgraph_candidates_list, graph_ind):
+    lines = []
+    for p in perm:
+        new_graph = []
+        for elt in graph:
+            new_elt = tuple(sorted([p[e] for e in elt]))
+            new_graph.append(new_elt)
+        new_graph = tuple(sorted(new_graph))
+        for i in range(len(subgraph_candidates_list)):
+            if new_graph == subgraph_candidates_list[i]:
+                line = [(len(new_graph) + 1) * 100, 100 + i * 100, (len(new_graph) + 2) * 100, 100 + graph_ind * 100]
+                lines.append(line)
+    return lines 
 
+num_nodes = 5
+nodes = [i for i in range(num_nodes)]
+edges = generate_edges(nodes)
+perm = list(permutations(nodes))
+graph_candidates = powerset(edges)
+no_iso_list = get_no_isomorphisms_list()
 d_edges_list = defaultdict(list)
 for graph in no_iso_list:
     d_edges_list[len(graph)].append(graph)
+
+# will contain [[x11, y11, x12, y12], ..., [xn1, yn1, xn2, yn2]]
+lines_to_draw = []
+for num_edges, graph_list in d_edges_list.items():
+    # for graphs with 0 - 2 edges, we know how to draw the lines
+    if num_edges == 0:
+        continue
+    if num_edges == 1:
+        lines_to_draw.append([100, 100, 200, 100])
+        continue
+    if num_edges == 2:
+        for i in range(len(graph_list)):
+            lines_to_draw.append([200, 100, 300, 100 + i * 100])
+        continue
+    # for graphs with E edges where E > 2, it's not obvious...
+    # so let's remove an edge, then check if permuting the
+    # remaining edges results in a graph with E - 1 edges
+    for i in range(len(graph_list)):
+        for j in range(len(graph_list[i])):
+            graph_to_check = graph_list[i][:j] + graph_list[i][j+1:]
+            lines_to_draw += check_subgraphs(graph_to_check, d_edges_list[num_edges - 1], i)
 
 # below generates the graph data for d3 visualization
 with open('js/generated_graph_data.js', 'w') as f:
@@ -69,7 +103,11 @@ with open('js/generated_graph_data.js', 'w') as f:
         for graph in graphs:
             g = [{"source": e1, "target": e2} for e1, e2 in graph] 
             f.write('    ' + str(g) + ',\n')
-        f.write(']\n')
+        f.write(']\n\n')
+    f.write('var lines = [\n')
+    for x1, y1, x2, y2 in lines_to_draw:
+        f.write('   [' + str(x1) + ',' + str(y1) + ',' + str(x2) + ',' + str(y2) + '],\n')
+    f.write(']\n')
 
 # below generates the d3 simulation variables for each graph
 with open('js/generated_graph_viz.js', 'w') as f:
