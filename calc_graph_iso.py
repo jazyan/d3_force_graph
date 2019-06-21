@@ -56,11 +56,9 @@ def check_subgraphs(graph, subgraph_candidates_list, graph_ind):
     for gp in graph_perms:
         for i in range(len(subgraph_candidates_list)):
             if gp == subgraph_candidates_list[i]:
-                x1 = (len(gp) + 1) * 100
-                y1 = 100 + i * 100
-                x2 = (len(gp) + 2) * 100
-                y2 = 100 + graph_ind * 100
-                lines.append([y1, x1, y2, x2])
+                x1, y1 = d_edges_centers[len(gp)][i]
+                x2, y2 = d_edges_centers[len(gp) + 1][graph_ind]
+                lines.append([x1, y1, x2, y2])
     return lines 
 
 num_nodes = 5
@@ -69,10 +67,20 @@ edges = generate_edges(nodes)
 perm = list(permutations(nodes))
 graph_candidates = powerset(edges)
 no_iso_list = get_no_isomorphisms_list()
+WIDTH = 1000
+HEIGHT = 1700
 
+# key is number of edges E, value is a list of graphs with E edges 
 d_edges_list = defaultdict(list)
+# key is number of edges E, value is list of center positions for graph
 for graph in no_iso_list:
     d_edges_list[len(graph)].append(graph)
+
+d_edges_centers = defaultdict(list)
+for num_edges, graph_list in d_edges_list.items():
+    L = len(graph_list)
+    dist, y = 100, (num_edges + 1) * 100
+    d_edges_centers[num_edges] = [(WIDTH//2 - (L-1)*dist//2 + i*dist, y) for i in range(L)]
 
 # will contain [[x11, y11, x12, y12], ..., [xn1, yn1, xn2, yn2]]
 lines_to_draw = []
@@ -113,9 +121,8 @@ with open('js/generated_graph_viz.js', 'w') as f:
     for num, graphs in d_edges_list.items():
         for i in range(len(graphs)):
             var_num = str(num * 100 + i)
-            x = str((num + 1) * 100)
-            y = str(100 + i * 100)
-            f.write(f'var sim{var_num} = createSimulation(ndata, ldata{num}[{i}], {y}, {x});\n')
+            x, y = d_edges_centers[num][i]
+            f.write(f'var sim{var_num} = createSimulation(ndata, ldata{num}[{i}], {x}, {y});\n')
             f.write(f'var node{var_num} = createNode(ndata);\n')
             f.write(f'var link{var_num} = createLink(ldata{num}[{i}]);\n')
             f.write(f'sim{var_num}.on("tick", function() {{tickActions(node{var_num}, link{var_num})}});\n')

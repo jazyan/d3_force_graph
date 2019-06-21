@@ -41,13 +41,15 @@ function tickActions(node, link) {
         .attr("y2", function(d) {return d.target.y});
 }
 
-var gap = 30
+var vgap = 30
+// var hgap = 20
 for (var i = 0; i < lines.length; i++) {
     svg.append("line")
        .attr("x1", lines[i][0])
-       .attr("y1", lines[i][1] + gap)
+       .attr("y1", lines[i][1] + vgap)
        .attr("x2", lines[i][2])
-       .attr("y2", lines[i][3] - gap)
+       .attr("y2", lines[i][3] - vgap)
        .attr("stroke-width", 1)
        .attr("stroke", "red")
+       //.attr("marker-end", "url(#arrow)")
 }
