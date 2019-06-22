@@ -31,12 +31,13 @@ var links_data = [
 ]
 
 var simulation = d3.forceSimulation().nodes(nodes_data);
-var link_force = d3.forceLink(links_data).distance(300);
+var link_force = d3.forceLink(links_data);
 
 
 simulation.force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("link", link_force);
+        .force("link", link_force)
+        .force("radial", d3.forceRadial(0.1, width / 2, height / 2));
 
 var node = svg.append("g")
             .attr("class", "nodes")

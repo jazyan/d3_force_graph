@@ -6,7 +6,8 @@ function createSimulation(ndata, ldata, width, height) {
     var simulation = d3.forceSimulation().nodes(ndata);
     simulation.force("charge_force", d3.forceManyBody())
           .force("center_force", d3.forceCenter(width, height))
-          .force("links", d3.forceLink(ldata));
+          .force("links", d3.forceLink(ldata))
+          .force("radial", d3.forceRadial(1, width, height));
     return simulation;
 }
 
@@ -41,7 +42,7 @@ function tickActions(node, link) {
         .attr("y2", function(d) {return d.target.y});
 }
 
-var vgap = 30
+var vgap = 35
 // var hgap = 20
 for (var i = 0; i < lines.length; i++) {
     svg.append("line")
@@ -52,4 +53,14 @@ for (var i = 0; i < lines.length; i++) {
        .attr("stroke-width", 1)
        .attr("stroke", "red")
        //.attr("marker-end", "url(#arrow)")
+}
+
+for (var i = 0; i < centers.length; i++) {
+    svg.append("circle")
+    .attr("cx", centers[i][0] + 2)
+    .attr("cy", centers[i][1])
+    .attr("r", 31)
+    .attr("stroke", "red")
+    .attr("stroke-width", 2)
+    .attr("fill", "none");
 }

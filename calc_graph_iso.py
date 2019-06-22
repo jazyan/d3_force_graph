@@ -97,20 +97,30 @@ for num_edges, graph_list in d_edges_list.items():
 
 # below generates the graph data for d3 visualization
 with open('js/generated_graph_data.js', 'w') as f:
+    # create node data
     f.write('var ndata = [\n')
     for i in range(num_nodes):
         f.write(f'    {{"id": {i}}},\n')
     f.write(']\n\n')
+    # create link data
     for num, graphs in d_edges_list.items():
         f.write(f'var ldata{num} = [\n')
         for graph in graphs:
             g = [{"source": e1, "target": e2} for e1, e2 in graph] 
             f.write(f'    {g},\n')
         f.write(']\n\n')
+    # create graph edge data
     f.write('var lines = [\n')
     for x1, y1, x2, y2 in lines_to_draw:
         f.write(f'   [{x1}, {y1}, {x2}, {y2}],\n')
-    f.write(']\n')
+    f.write(']\n\n')
+    # create graph node center data
+    f.write('var centers = [\n')
+    for num_edges, center_list in d_edges_centers.items():
+        for x, y in center_list:
+            f.write(f'    [{x}, {y}],\n')
+    f.write(']\n\n')
+    
 
 # below generates the d3 simulation variables for each graph
 with open('js/generated_graph_viz.js', 'w') as f:
