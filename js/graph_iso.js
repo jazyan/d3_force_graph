@@ -1,6 +1,8 @@
 var svg = d3.select("svg");
 var width = svg.attr("width");
 var height = svg.attr("height");
+var inner_color = "black"
+var outer_color = "grey"
 
 function createSimulation(ndata, ldata, width, height) {
     var simulation = d3.forceSimulation().nodes(ndata);
@@ -19,7 +21,7 @@ function createNode(node_data) {
               .enter()
               .append("circle")
               .attr("r", 5)
-              .attr("fill", 'black');
+              .attr("fill", inner_color);
 }
 
 function createLink(link_data) {
@@ -30,7 +32,7 @@ function createLink(link_data) {
               .enter()
               .append("line")
               .attr("stroke-width", 2)
-              .style("stroke", 'black');
+              .style("stroke", inner_color);
 }
 
 function tickActions(node, link) {
@@ -50,8 +52,8 @@ for (var i = 0; i < lines.length; i++) {
        .attr("y1", lines[i][1] + vgap)
        .attr("x2", lines[i][2])
        .attr("y2", lines[i][3] - vgap)
-       .attr("stroke-width", 1)
-       .attr("stroke", "red")
+       .attr("stroke-width", 1.5)
+       .attr("stroke", outer_color)
        //.attr("marker-end", "url(#arrow)")
 }
 
@@ -60,7 +62,7 @@ for (var i = 0; i < centers.length; i++) {
     .attr("cx", centers[i][0] + 2)
     .attr("cy", centers[i][1])
     .attr("r", 31)
-    .attr("stroke", "red")
+    .attr("stroke", outer_color)
     .attr("stroke-width", 2)
     .attr("fill", "none");
 }
