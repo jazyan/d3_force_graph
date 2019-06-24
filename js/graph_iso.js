@@ -44,25 +44,32 @@ function tickActions(node, link) {
         .attr("y2", function(d) {return d.target.y});
 }
 
-var vgap = 35
+// draw lines between graph nodes below
+var vgap = 50
 // var hgap = 20
 for (var i = 0; i < lines.length; i++) {
     svg.append("line")
        .attr("x1", lines[i][0])
-       .attr("y1", lines[i][1] + vgap)
+       .attr("y1", lines[i][1] + 30)
        .attr("x2", lines[i][2])
-       .attr("y2", lines[i][3] - vgap)
+       .attr("y2", lines[i][3] - 60)
        .attr("stroke-width", 1.5)
        .attr("stroke", outer_color)
        //.attr("marker-end", "url(#arrow)")
 }
 
+// draw circles around graphs to make graph nodes
+// also, draw accompanying text labels
 for (var i = 0; i < centers.length; i++) {
     svg.append("circle")
-    .attr("cx", centers[i][0] + 2)
-    .attr("cy", centers[i][1])
-    .attr("r", 31)
-    .attr("stroke", outer_color)
-    .attr("stroke-width", 2)
-    .attr("fill", "none");
+       .attr("cx", centers[i][0] + 2)
+       .attr("cy", centers[i][1])
+       .attr("r", 31)
+       .attr("stroke", outer_color)
+       .attr("stroke-width", 2)
+       .attr("fill", "none");
+    svg.append("text")
+       .attr("x", centers[i][0] - 20)
+       .attr("y", centers[i][1] - 40)
+       .text("hello");
 }

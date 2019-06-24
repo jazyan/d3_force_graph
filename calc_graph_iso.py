@@ -79,7 +79,7 @@ for graph in no_iso_list:
 d_edges_centers = defaultdict(list)
 for num_edges, graph_list in d_edges_list.items():
     L = len(graph_list)
-    dist, y = 100, (num_edges + 1) * 100
+    dist, y = 100, num_edges * 150 + 100
     d_edges_centers[num_edges] = [(WIDTH//2 - (L-1)*dist//2 + i*dist, y) for i in range(L)]
 
 # will contain [[x11, y11, x12, y12], ..., [xn1, yn1, xn2, yn2]]
