@@ -61,6 +61,34 @@ def check_subgraphs(graph, subgraph_candidates_list, graph_ind):
                 lines.append([x1, y1, x2, y2])
     return lines 
 
+# TODO
+def generate_labels(num_nodes):
+    # do the following three procedures
+    # (1) t(G) <= t(G\{u,v}) * pN
+    # (2) t(G) <= max(t(G\e)) * p
+    # (3) t(G) <= min(t(G\e))
+    # take the answer with the smallest power of N, then the largest power of p
+    # let's represent pN as a tuple (N, -p), so we can sort and get the smallest tuple
+
+    # have a dictionary of graphs to answers: 
+    # note that (1) requires calculating graphs that have fewer nodes that num_nodes
+    # maybe we first do procedures (2) and (3), which can be solved using 1dim DP...
+
+    # question: how will we represent the graphs?
+    # if we use an edge list, we'll have to include the number of nodes in the graph
+    # otherwise, the empty graph on 2 vertices appears the same as the empty one on 4
+    # CHECK THE BELOW
+    # for 2: 
+    #   (()) -> (2, 0)
+    #   ((0, 1)) -> (1, -1)
+    # for 3: 
+    #   (()) -> (3, 0)
+    #   ((0, 1)) -> (2, -1)
+    #   ((0, 1), (0, 2)) -> (2, -2)
+    #   ((0, 1), (0, 2), (1, 2)) -> (2, -3)
+    return None
+
+
 num_nodes = 5
 nodes = [i for i in range(num_nodes)]
 edges = generate_edges(nodes)
