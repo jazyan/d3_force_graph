@@ -58,6 +58,15 @@ for (var i = 0; i < lines.length; i++) {
        //.attr("marker-end", "url(#arrow)")
 }
 
+// taken from https://bl.ocks.org/mbostock/6738109
+var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
+    formatPower = function(d) { 
+        console.log(d);
+        return (d + "").split("").map(
+            function(c) { return superscript[c]; }).join(""
+        ); 
+    };
+
 // draw circles around graphs to make graph nodes
 // also, draw accompanying text labels
 for (var i = 0; i < centers.length; i++) {
@@ -68,8 +77,14 @@ for (var i = 0; i < centers.length; i++) {
        .attr("stroke", outer_color)
        .attr("stroke-width", 2)
        .attr("fill", "none");
+    
+    var label = "p" + formatPower(centers[i][2]); 
+    label += "N" + formatPower(centers[i][3]);
+    
     svg.append("text")
        .attr("x", centers[i][0] - 20)
        .attr("y", centers[i][1] - 40)
-       .text("hello");
+       .text(label)
+       .style("font-size", "25px")
+       .style("font-family", "monospace")
 }

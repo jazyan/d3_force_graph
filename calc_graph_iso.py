@@ -50,19 +50,25 @@ def generate_graph_perms(graph):
         graph_perm.add(new_graph)
     return graph_perm
 
+# generate the graph perms where you additionally remove the edges that contain
+# either n1 or n2
+def generate_graph_perms_remove_nodes(graph, rn1, rn2):
+    graph = [edge for edge in graph if rn1 not in edge and rn2 not in edge]
+    return generate_graph_perms(graph)
+
 def check_subgraphs(graph, subgraph_candidates_list, graph_ind):
     lines = []
     graph_perms = generate_graph_perms(graph)
     for gp in graph_perms:
         for i in range(len(subgraph_candidates_list)):
             if gp == subgraph_candidates_list[i]:
-                x1, y1 = d_edges_centers[len(gp)][i]
-                x2, y2 = d_edges_centers[len(gp) + 1][graph_ind]
+                x1, y1, l1 = d_edges_centers_and_labels[len(gp)][i]
+                x2, y2, l1 = d_edges_centers_and_labels[len(gp) + 1][graph_ind]
                 lines.append([x1, y1, x2, y2])
     return lines 
 
 # TODO
-def generate_labels(num_nodes):
+def generate_labels(num_nodes, no_iso_list):
     # do the following three procedures
     # (1) t(G) <= t(G\{u,v}) * pN
     # (2) t(G) <= max(t(G\e)) * p
@@ -86,7 +92,49 @@ def generate_labels(num_nodes):
     #   ((0, 1)) -> (2, -1)
     #   ((0, 1), (0, 2)) -> (2, -2)
     #   ((0, 1), (0, 2), (1, 2)) -> (2, -3)
-    return None
+    if num_nodes == 2:
+        return {0: [(2, 0)], 1: [(1, -1)]}
+    if num_nodes == 3:
+        return {0: [(3, 0)], 1: [(2, -1)], 2: [(2, -2)], 3: [(2, -3)]}
+    if num_nodes > 5:
+        raise Exception('unimplemented')
+    # cases 4 and 5
+    d_small = {
+        (2, ()): (2, 0), 
+        (2, ((0, 1),)): (1, -1), 
+        (3, ()): (3, 0), 
+        (3, ((0, 1),)): (2, -1), 
+        (3, ((0, 1), (0, 2))): (2, -2),
+        (3, ((0, 1), (0, 2), (1, 2))): (2, -3),
+    }
+    d_ans = {}
+    # no_iso_list is a list of graphs represented as an edge list
+    # sorted by ascending number of edges
+    for graph in no_iso_list:
+        if len(graph) == 0:
+            d_ans[graph] = (num_nodes, 0)
+            continue
+        # candidates_small contains candidates for (1), candidates_equal for (2) and (3)
+        candidates_small = []
+        candidates_equal = []
+        for i in range(len(graph)):
+            graph_without_edge_i = graph[:i] + graph[i+1:]
+            graph_perms = generate_graph_perms(graph_without_edge_i)
+            for gp in graph_perms:
+                if gp in d_ans:
+                    candidates_equal.append(d_ans[gp])
+            graph_perms_small = generate_graph_perms_remove_nodes(graph, graph[i][0], graph[i][1])
+            for gps in graph_perms_small:
+                key_candidate = (num_nodes - 2, gps)
+                if key_candidate in d_small:
+                    candidates_small.append(d_small[key_candidate])
+        candidates = [(n + 1, p - 1) for (n, p) in candidates_small]
+        n1, p1 = max(candidates_equal)
+        candidates.append((n1, p1 - 1))
+        n2, p2 = min(candidates_equal)
+        candidates.append((n2, p2))
+        d_ans[graph] = min(candidates)
+    return d_ans 
 
 
 num_nodes = 5
@@ -98,17 +146,23 @@ no_iso_list = get_no_isomorphisms_list()
 WIDTH = 1000
 HEIGHT = 1700
 
+d_labels = generate_labels(num_nodes, no_iso_list)
+
 # key is number of edges E, value is a list of graphs with E edges 
 d_edges_list = defaultdict(list)
 # key is number of edges E, value is list of center positions for graph
 for graph in no_iso_list:
     d_edges_list[len(graph)].append(graph)
 
-d_edges_centers = defaultdict(list)
+d_edges_centers_and_labels = defaultdict(list)
 for num_edges, graph_list in d_edges_list.items():
     L = len(graph_list)
-    dist, y = 100, num_edges * 150 + 100
-    d_edges_centers[num_edges] = [(WIDTH//2 - (L-1)*dist//2 + i*dist, y) for i in range(L)]
+    dist = 100
+    y = num_edges * 150 + 100
+    for i in range(L):
+        x = WIDTH//2 - (L-1)*dist//2 + i*dist
+        label = d_labels[graph_list[i]]
+        d_edges_centers_and_labels[num_edges].append((x, y, label))
 
 # will contain [[x11, y11, x12, y12], ..., [xn1, yn1, xn2, yn2]]
 lines_to_draw = []
@@ -144,9 +198,9 @@ with open('js/generated_graph_data.js', 'w') as f:
     f.write(']\n\n')
     # create graph node center data
     f.write('var centers = [\n')
-    for num_edges, center_list in d_edges_centers.items():
-        for x, y in center_list:
-            f.write(f'    [{x}, {y}],\n')
+    for num_edges, center_list in d_edges_centers_and_labels.items():
+        for x, y, l in center_list:
+            f.write(f'    [{x}, {y}, {-l[1]}, {l[0]}],\n')
     f.write(']\n\n')
     
 
@@ -159,7 +213,7 @@ with open('js/generated_graph_viz.js', 'w') as f:
     for num, graphs in d_edges_list.items():
         for i in range(len(graphs)):
             var_num = str(num * 100 + i)
-            x, y = d_edges_centers[num][i]
+            x, y, l = d_edges_centers_and_labels[num][i]
             f.write(f'var sim{var_num} = createSimulation(ndata, ldata{num}[{i}], {x}, {y});\n')
             f.write(f'var node{var_num} = createNode(ndata);\n')
             f.write(f'var link{var_num} = createLink(ldata{num}[{i}]);\n')
