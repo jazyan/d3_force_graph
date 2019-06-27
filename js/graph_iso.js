@@ -45,14 +45,14 @@ function tickActions(node, link) {
 }
 
 // draw lines between graph nodes below
-var vgap = 50
+// var vgap = 50
 // var hgap = 20
 for (var i = 0; i < lines.length; i++) {
     svg.append("line")
        .attr("x1", lines[i][0])
-       .attr("y1", lines[i][1] + 30)
+       .attr("y1", lines[i][1] + 65)
        .attr("x2", lines[i][2])
-       .attr("y2", lines[i][3] - 60)
+       .attr("y2", lines[i][3] - 35)
        .attr("stroke-width", 1.5)
        .attr("stroke", outer_color)
        //.attr("marker-end", "url(#arrow)")
@@ -78,12 +78,21 @@ for (var i = 0; i < centers.length; i++) {
        .attr("stroke-width", 2)
        .attr("fill", "none");
     
-    var label = "p" + formatPower(centers[i][2]); 
-    label += "N" + formatPower(centers[i][3]);
+    var label = "";
+    var xgap = -20;
+    var ygap = 60;
+    if (centers[i][2] != 0) {
+        label += "p" + formatPower(centers[i][2]); 
+    } else {
+        xgap += 10;
+    }
+    if (centers[i][3] != 0) {
+        label += "N" + formatPower(centers[i][3]);
+    }
     
     svg.append("text")
-       .attr("x", centers[i][0] - 20)
-       .attr("y", centers[i][1] - 40)
+       .attr("x", centers[i][0] + xgap)
+       .attr("y", centers[i][1] + ygap)
        .text(label)
        .style("font-size", "25px")
        .style("font-family", "monospace")
