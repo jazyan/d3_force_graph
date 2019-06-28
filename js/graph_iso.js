@@ -81,10 +81,13 @@ for (var i = 0; i < centers.length; i++) {
     var label = "";
     var xgap = -20;
     var ygap = 60;
-    if (centers[i][2] != 0) {
-        label += "p" + formatPower(centers[i][2]); 
-    } else {
+    if (centers[i][2] == 0) {
         xgap += 10;
+    } else if (centers[i][2] == 1) {
+        label += "p"
+        xgap += 5;
+    } else {  // cases > 1
+        label += "p" + formatPower(centers[i][2]); 
     }
     if (centers[i][3] != 0) {
         label += "N" + formatPower(centers[i][3]);

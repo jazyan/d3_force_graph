@@ -74,24 +74,8 @@ def generate_labels(num_nodes, no_iso_list):
     # (2) t(G) <= max(t(G\e)) * p
     # (3) t(G) <= min(t(G\e))
     # take the answer with the smallest power of N, then the largest power of p
-    # let's represent pN as a tuple (N, -p), so we can sort and get the smallest tuple
-
-    # have a dictionary of graphs to answers: 
-    # note that (1) requires calculating graphs that have fewer nodes that num_nodes
-    # maybe we first do procedures (2) and (3), which can be solved using 1dim DP...
-
-    # question: how will we represent the graphs?
-    # if we use an edge list, we'll have to include the number of nodes in the graph
-    # otherwise, the empty graph on 2 vertices appears the same as the empty one on 4
-    # CHECK THE BELOW
-    # for 2: 
-    #   (()) -> (2, 0)
-    #   ((0, 1)) -> (1, -1)
-    # for 3: 
-    #   (()) -> (3, 0)
-    #   ((0, 1)) -> (2, -1)
-    #   ((0, 1), (0, 2)) -> (2, -2)
-    #   ((0, 1), (0, 2), (1, 2)) -> (2, -3)
+    # to make this easier, represent pN as a tuple (N, -p)
+    # so we can sort and get the smallest tuple
     if num_nodes == 2:
         return {0: [(2, 0)], 1: [(1, -1)]}
     if num_nodes == 3:
@@ -99,6 +83,9 @@ def generate_labels(num_nodes, no_iso_list):
     if num_nodes > 5:
         raise Exception('unimplemented')
     # cases 4 and 5
+    # d_small contains the answers for graphs with 2 nodes and 3 nodes
+    # we have to include the number of nodes in the key because the
+    # empty graph on 2 vertices is different from the empty graph on 3
     d_small = {
         (2, ()): (2, 0), 
         (2, ((0, 1),)): (1, -1), 
@@ -118,26 +105,34 @@ def generate_labels(num_nodes, no_iso_list):
         candidates_small = []
         candidates_equal = []
         for i in range(len(graph)):
+            # first, generate all permutations of graphs without edge i
+            # then check if it's already in d_ans, and add it as a candidate for (2) and (3)
             graph_without_edge_i = graph[:i] + graph[i+1:]
             graph_perms = generate_graph_perms(graph_without_edge_i)
             for gp in graph_perms:
                 if gp in d_ans:
                     candidates_equal.append(d_ans[gp])
+            # second, generate all permutations without the nodes in edge i
+            # this is for procedure (1); check if the resulting graphs are in d_small
             graph_perms_small = generate_graph_perms_remove_nodes(graph, graph[i][0], graph[i][1])
             for gps in graph_perms_small:
                 key_candidate = (num_nodes - 2, gps)
                 if key_candidate in d_small:
                     candidates_small.append(d_small[key_candidate])
+        # procedure (1)
         candidates = [(n + 1, p - 1) for (n, p) in candidates_small]
+        # procedure (2)
         n1, p1 = max(candidates_equal)
         candidates.append((n1, p1 - 1))
+        # procedure (3)
         n2, p2 = min(candidates_equal)
         candidates.append((n2, p2))
+        # the actual answer should be the min tuple across candidates
         d_ans[graph] = min(candidates)
     return d_ans 
 
 
-num_nodes = 5
+num_nodes = 4
 nodes = [i for i in range(num_nodes)]
 edges = generate_edges(nodes)
 perm = list(permutations(nodes))
