@@ -22,9 +22,8 @@ def powerset(li):
         A.append(subset)
     return A
 
-# given the number of nodes, return a list of all the graphs
-# represented as edge lists where no two graphs are isomorphisms
-# of each other
+# returns a list of all the graphs with N nodes
+# represented as edge lists where no two are isomorphisms of each other
 def get_no_isomorphisms_list():
     no_iso_list = []
     seen = set()
@@ -50,36 +49,39 @@ def generate_graph_perms(graph):
         graph_perm.add(new_graph)
     return graph_perm
 
-# generate the graph perms where you additionally remove the edges that contain
-# either n1 or n2
+# generate the graph permutations where, additionally,
+# edges that contain either n1 or n2 are removed
 def generate_graph_perms_remove_nodes(graph, rn1, rn2):
     graph = [edge for edge in graph if rn1 not in edge and rn2 not in edge]
     return generate_graph_perms(graph)
 
-def check_subgraphs(graph, subgraph_candidates_list, graph_ind):
+# find all the subgraphs of a graph centered at (x2, y2)
+# return the lines defined by (x1, y1) -> (x2, y2)
+# where (x1, y1) is the center of the subgraph
+def generate_lines_to_subgraphs(graph, subgraph_candidates_list, graph_ind):
     lines = []
     graph_perms = generate_graph_perms(graph)
     for gp in graph_perms:
         for i in range(len(subgraph_candidates_list)):
             if gp == subgraph_candidates_list[i]:
-                x1, y1, l1 = d_edges_centers_and_labels[len(gp)][i]
-                x2, y2, l1 = d_edges_centers_and_labels[len(gp) + 1][graph_ind]
+                x1, y1, _ = d_edges_centers_and_labels[len(gp)][i]
+                x2, y2, _ = d_edges_centers_and_labels[len(gp) + 1][graph_ind]
                 lines.append([x1, y1, x2, y2])
     return lines 
 
-# TODO
+# do the following three procedures
+# (1) t(G) <= t(G\{u,v}) * pN
+# (2) t(G) <= max(t(G\e)) * p
+# (3) t(G) <= min(t(G\e))
+# take the answer with the smallest power of N, then the largest power of p
+# to make this easier, represent pN as a tuple (N, -p)
+# so we can sort and get the smallest tuple
 def generate_labels(num_nodes, no_iso_list):
-    # do the following three procedures
-    # (1) t(G) <= t(G\{u,v}) * pN
-    # (2) t(G) <= max(t(G\e)) * p
-    # (3) t(G) <= min(t(G\e))
-    # take the answer with the smallest power of N, then the largest power of p
-    # to make this easier, represent pN as a tuple (N, -p)
-    # so we can sort and get the smallest tuple
     if num_nodes == 2:
         return {0: [(2, 0)], 1: [(1, -1)]}
     if num_nodes == 3:
         return {0: [(3, 0)], 1: [(2, -1)], 2: [(2, -2)], 3: [(2, -3)]}
+    # TODO: implement this
     if num_nodes > 5:
         raise Exception('unimplemented')
     # cases 4 and 5
@@ -131,6 +133,7 @@ def generate_labels(num_nodes, no_iso_list):
         d_ans[graph] = min(candidates)
     return d_ans 
 
+# TODO: clean up below
 
 num_nodes = 4
 nodes = [i for i in range(num_nodes)]
@@ -170,7 +173,7 @@ for num_edges, graph_list in d_edges_list.items():
     for i in range(len(graph_list)):
         for j in range(len(graph_list[i])):
             graph_to_check = graph_list[i][:j] + graph_list[i][j+1:]
-            lines_to_draw += check_subgraphs(graph_to_check, d_edges_list[num_edges - 1], i)
+            lines_to_draw += generate_lines_to_subgraphs(graph_to_check, d_edges_list[num_edges - 1], i)
 
 # below generates the graph data for d3 visualization
 with open('js/generated_graph_data.js', 'w') as f:
