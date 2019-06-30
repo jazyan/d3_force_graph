@@ -135,7 +135,7 @@ def generate_labels(num_nodes, no_iso_list):
 
 # TODO: clean up below
 
-num_nodes = 4
+num_nodes = 5
 nodes = [i for i in range(num_nodes)]
 edges = generate_edges(nodes)
 perm = list(permutations(nodes))
