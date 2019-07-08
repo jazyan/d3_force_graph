@@ -141,7 +141,7 @@ def generate_centers_and_labels(d_edges_list, d_labels):
     for num_edges, graph_list in d_edges_list.items():
         L = len(graph_list)
         dist = 100
-        y = num_edges * 150 + 100
+        y = num_edges * 150 + 50
         # key is number of edges E, value is list of center positions for graph
         for i in range(L):
             x = WIDTH//2 - (L-1)*dist//2 + i*dist
@@ -176,13 +176,13 @@ def generate_lines(d_edges_list):
     return lines_to_draw
 
 # TODO: clean up below
-num_nodes = 5
+num_nodes = 4
 nodes = [i for i in range(num_nodes)]
 edges = generate_edges(nodes)
 perm = list(permutations(nodes))
 graph_candidates = powerset(edges)
 no_iso_list = get_no_isomorphisms_list()
-WIDTH = 1000
+WIDTH = 600
 HEIGHT = 1700
 d_edges_list = generate_edges_list_dict(no_iso_list)
 d_labels = generate_labels(num_nodes, no_iso_list)

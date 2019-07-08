@@ -1,10 +1,10 @@
 var svg = d3.select("svg");
 var width = svg.attr("width");
 var height = svg.attr("height");
-var inner_node_color = "red"
-var inner_link_color = "navy"
-var outer_node_color = "grey"
-var outer_link_color = "black"
+var inner_node_color = "#DC143C"
+var inner_link_color = "#DC143C"
+var outer_node_color = "#4682B4"
+var outer_link_color = "#4682B4"
 
 function createSimulation(ndata, ldata, width, height) {
     var simulation = d3.forceSimulation().nodes(ndata);
@@ -52,7 +52,7 @@ function tickActions(node, link) {
 for (var i = 0; i < lines.length; i++) {
     svg.append("line")
        .attr("x1", lines[i][0])
-       .attr("y1", lines[i][1] + 65)
+       .attr("y1", lines[i][1] + 60)
        .attr("x2", lines[i][2])
        .attr("y2", lines[i][3] - 35)
        .attr("stroke-width", 1.5)
@@ -73,7 +73,7 @@ var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
 // also, draw accompanying text labels
 for (var i = 0; i < centers.length; i++) {
     svg.append("circle")
-       .attr("cx", centers[i][0] + 2)
+       .attr("cx", centers[i][0])
        .attr("cy", centers[i][1])
        .attr("r", 31)
        .attr("stroke", outer_node_color)
@@ -82,7 +82,7 @@ for (var i = 0; i < centers.length; i++) {
     
     var label = "";
     var xgap = -20;
-    var ygap = 60;
+    var ygap = 55;
     if (centers[i][2] == 0) {
         xgap += 10;
     } else if (centers[i][2] == 1) {
