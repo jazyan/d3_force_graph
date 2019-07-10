@@ -75,7 +75,7 @@ for (var i = 0; i < centers.length; i++) {
     svg.append("circle")
        .attr("cx", centers[i][0])
        .attr("cy", centers[i][1])
-       .attr("r", 31)
+       .attr("r", 32)
        .attr("stroke", outer_node_color)
        .attr("stroke-width", 2)
        .attr("fill", "none");

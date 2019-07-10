@@ -24,7 +24,7 @@ def powerset(li):
 
 # returns a list of all the graphs with N nodes
 # represented as edge lists where no two are isomorphisms of each other
-def get_no_isomorphisms_list():
+def get_no_isomorphisms_list(graph_candidates, perm):
     no_iso_list = []
     seen = set()
     for graph in graph_candidates:
@@ -33,12 +33,12 @@ def get_no_isomorphisms_list():
             continue
         # otherwise, process this graph with permutation function
         no_iso_list.append(graph)
-        seen |= generate_graph_perms(graph)
+        seen |= generate_graph_perms(graph, perm)
     return sorted(no_iso_list, key=len)
 
 # given a graph, generate a set of node permutations
 # for example, the graph [[0, 1], [1, 2]] permuted is [[0, 2], [2, 1]]
-def generate_graph_perms(graph):
+def generate_graph_perms(graph, perm):
     graph_perm = set()
     for p in perm:
         # we sort everything because the edges are undirected
@@ -51,16 +51,16 @@ def generate_graph_perms(graph):
 
 # generate the graph permutations where, additionally,
 # edges that contain either n1 or n2 are removed
-def generate_graph_perms_remove_nodes(graph, rn1, rn2):
+def generate_graph_perms_remove_nodes(graph, rn1, rn2, perm):
     graph = [edge for edge in graph if rn1 not in edge and rn2 not in edge]
-    return generate_graph_perms(graph)
+    return generate_graph_perms(graph, perm)
 
 # find all the subgraphs of a graph centered at (x2, y2)
 # return the lines defined by (x1, y1) -> (x2, y2)
 # where (x1, y1) is the center of the subgraph
-def generate_lines_to_subgraphs(graph, subgraph_candidates_list, graph_ind):
+def generate_lines_to_subgraphs(graph, subgraph_candidates_list, graph_ind, perm):
     lines = []
-    graph_perms = generate_graph_perms(graph)
+    graph_perms = generate_graph_perms(graph, perm)
     for gp in graph_perms:
         for i in range(len(subgraph_candidates_list)):
             if gp == subgraph_candidates_list[i]:
@@ -76,15 +76,11 @@ def generate_lines_to_subgraphs(graph, subgraph_candidates_list, graph_ind):
 # take the answer with the smallest power of N, then the largest power of p
 # to make this easier, represent pN as a tuple (N, -p)
 # so we can sort and get the smallest tuple
-def generate_labels(num_nodes, no_iso_list):
+def generate_labels(num_nodes):
     if num_nodes == 2:
         return {0: [(2, 0)], 1: [(1, -1)]}
     if num_nodes == 3:
         return {0: [(3, 0)], 1: [(2, -1)], 2: [(2, -2)], 3: [(2, -3)]}
-    # TODO: implement this
-    if num_nodes > 5:
-        raise Exception('unimplemented')
-    # cases 4 and 5
     # d_small contains the answers for graphs with 2 nodes and 3 nodes
     # we have to include the number of nodes in the key because the
     # empty graph on 2 vertices is different from the empty graph on 3
@@ -96,7 +92,18 @@ def generate_labels(num_nodes, no_iso_list):
         (3, ((0, 1), (0, 2))): (2, -2),
         (3, ((0, 1), (0, 2), (1, 2))): (2, -3),
     }
+    # we need cases up to num_nodes - 2, and 2 and 3 are included above
+    for n in range(4, num_nodes - 1):
+        d_ans = generate_labels_n(d_small, n)
+        for graph, value in d_ans.items():
+            d_small[(n, graph)] = value
+    return generate_labels_n(d_small, num_nodes)
+
+
+def generate_labels_n(d_small, num_nodes):
     d_ans = {}
+    perm = generate_permutation(num_nodes)
+    no_iso_list = generate_no_iso_list(num_nodes, perm)
     # no_iso_list is a list of graphs represented as an edge list
     # sorted by ascending number of edges
     for graph in no_iso_list:
@@ -110,13 +117,13 @@ def generate_labels(num_nodes, no_iso_list):
             # first, generate all permutations of graphs without edge i
             # then check if it's already in d_ans, and add it as a candidate for (2) and (3)
             graph_without_edge_i = graph[:i] + graph[i+1:]
-            graph_perms = generate_graph_perms(graph_without_edge_i)
+            graph_perms = generate_graph_perms(graph_without_edge_i, perm)
             for gp in graph_perms:
                 if gp in d_ans:
                     candidates_equal.append(d_ans[gp])
             # second, generate all permutations without the nodes in edge i
             # this is for procedure (1); check if the resulting graphs are in d_small
-            graph_perms_small = generate_graph_perms_remove_nodes(graph, graph[i][0], graph[i][1])
+            graph_perms_small = generate_graph_perms_remove_nodes(graph, graph[i][0], graph[i][1], perm)
             for gps in graph_perms_small:
                 key_candidate = (num_nodes - 2, gps)
                 if key_candidate in d_small:
@@ -133,6 +140,7 @@ def generate_labels(num_nodes, no_iso_list):
         d_ans[graph] = min(candidates)
     return d_ans 
 
+
 # given d_edges_list, a dict of number of edges E to list of graphs with E edges
 # and d_labels, a dict of graphs to labels
 # return a dict with number of edges to list of centers and labels
@@ -141,7 +149,7 @@ def generate_centers_and_labels(d_edges_list, d_labels):
     for num_edges, graph_list in d_edges_list.items():
         L = len(graph_list)
         dist = 100
-        y = num_edges * 150 + 50
+        y = num_edges * 250 + 50
         # key is number of edges E, value is list of center positions for graph
         for i in range(L):
             x = WIDTH//2 - (L-1)*dist//2 + i*dist
@@ -160,7 +168,7 @@ def generate_edges_list_dict(no_iso_list):
 
 # given a dictionary of edges E to a list of graphs with E edges
 # return the list of lines between all the graph and their respective subgraphs
-def generate_lines(d_edges_list):
+def generate_lines(d_edges_list, perm):
     # will contain [[x11, y11, x12, y12], ..., [xn1, yn1, xn2, yn2]]
     lines_to_draw = []
     for num_edges, graph_list in d_edges_list.items():
@@ -172,22 +180,30 @@ def generate_lines(d_edges_list):
         for i in range(len(graph_list)):
             for j in range(len(graph_list[i])):
                 graph_to_check = graph_list[i][:j] + graph_list[i][j+1:]
-                lines_to_draw += generate_lines_to_subgraphs(graph_to_check, d_edges_list[num_edges - 1], i)
+                lines_to_draw += generate_lines_to_subgraphs(graph_to_check, d_edges_list[num_edges - 1], i, perm)
     return lines_to_draw
 
-# TODO: clean up below
-num_nodes = 4
-nodes = [i for i in range(num_nodes)]
-edges = generate_edges(nodes)
-perm = list(permutations(nodes))
-graph_candidates = powerset(edges)
-no_iso_list = get_no_isomorphisms_list()
-WIDTH = 600
+def generate_no_iso_list(num_nodes, perm):
+    nodes = [i for i in range(num_nodes)]
+    edges = generate_edges(nodes)
+    graph_candidates = powerset(edges)
+    return get_no_isomorphisms_list(graph_candidates, perm)
+
+def generate_permutation(num_nodes):
+    nodes = [i for i in range(num_nodes)]
+    return list(permutations(nodes))
+
+WIDTH = 3000
 HEIGHT = 1700
+# TODO: clean up below
+num_nodes = 6
+perm = generate_permutation(num_nodes)
+no_iso_list = generate_no_iso_list(num_nodes, perm)
+
 d_edges_list = generate_edges_list_dict(no_iso_list)
-d_labels = generate_labels(num_nodes, no_iso_list)
+d_labels = generate_labels(num_nodes)
 d_edges_centers_and_labels = generate_centers_and_labels(d_edges_list, d_labels)
-lines_to_draw = generate_lines(d_edges_list)
+lines_to_draw = generate_lines(d_edges_list, perm)
 
 # below generates the graph data for d3 visualization
 with open('js/generated_graph_data.js', 'w') as f:
